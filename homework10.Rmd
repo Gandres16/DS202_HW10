@@ -1,0 +1,88 @@
+---
+title: "homework10"
+author: "Andres Gonzalez"
+date: "2023-04-23"
+output: html_document
+---
+
+
+##TEAMATES - ANDRES
+##GITHUB - https://github.com/Gandres16/DS202_HW10/
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, fig.width=12, fig.height = 5}
+library(tidyverse)
+accident = read.csv("accident.csv")
+accident
+
+accident %>% ggplot(aes(x=LONGITUD, y = LATITUDE)) + geom_point()
+
+```
+```{r}
+accidents_by_day <- accident %>%
+  group_by(DAY_WEEK) %>%
+  summarize(total_accidents = n())
+
+ggplot(accidents_by_day, aes(x = DAY_WEEK, y = total_accidents)) +
+  geom_bar(stat = "identity") +
+  xlab("Day of the Week") +
+  ylab("Number of Accidents") +
+  ggtitle("Accidents by Day of the Week")
+```
+```{r}
+accidents_by_hour <- accident %>%
+  filter(HOUR != 99) %>%
+  group_by(HOUR) %>%
+  summarize(total_accidents = n())
+
+ggplot(accidents_by_hour, aes(x = HOUR, y = total_accidents)) +
+  geom_bar(stat = "identity") +
+  xlab("Hour of the Day") +
+  ylab("Number of Accidents") +
+  ggtitle("Accidents by Hour of the Day")
+
+```
+```{r}
+accidents_with_drunk_driver <- accident %>%
+  filter(DRUNK_DR > 0) %>%
+  nrow()
+
+accidents_with_drunk_driver
+
+```
+
+```{r}
+persons = read.csv("person.csv")
+
+persons %>% filter(PER_TYP ==1)
+```
+```{r}
+vehicle = read.csv("vehicle.csv")
+
+accident_vehicle_data <- left_join(accident, vehicle, by = "ST_CASE")
+
+# Tally the number of accidents by day of the week, hour of the day, and gender
+accidents_by_day_hour_gender <- persons %>%
+  filter(HOUR != 99) %>%
+  filter(SEX != 8) %>%
+  filter(SEX != 9) %>%
+  left_join(accident_vehicle_data, by = "ST_CASE") %>% 
+  group_by(DAY_WEEK, HOUR, SEX) %>% 
+  summarize(num_accidents = n())
+
+accidents_by_day_hour_gender
+```
+```{r}
+# Visualize the results with a stacked bar chart
+ggplot(accidents_by_day_hour_gender, aes(x = HOUR, y = num_accidents, fill = DAY_WEEK)) +
+  facet_wrap(~SEX)+
+  geom_bar(stat = "identity", position = "stack") +
+  xlab("Hour of the Day") +
+  ylab("Number of Accidents") +
+  ggtitle("Accidents by Day of the Week, Hour of the Day, and Gender")
+
+```
